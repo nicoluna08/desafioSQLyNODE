@@ -14,7 +14,7 @@ const options = {
 sqlite:{
     client: "sqlite",
     connection: {
-       filename:path.join(__dirname, "../DB/chatdb.sqlite")
+       filename:path.join(__dirname, "./DB/chatdb.sqlite")
     },
     useNullAsDefault: true
 

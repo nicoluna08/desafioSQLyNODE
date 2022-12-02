@@ -93,7 +93,8 @@ return "NO SE ENCUENTRA PRODUCTO"
 class Mensajes{
   constructor(nombre,options_SQL3){
 this.NombreTabla = nombre;
-this.DatabaseSQL3 = options_SQL3;
+
+this.DatabaseSQL3 = knex(options_SQL3);
   }
 
 async crearTabla(){
@@ -102,11 +103,15 @@ if (chatTable) {
   await this.DatabaseSQL3.schema.dropTable("chat");
 }
 await this.DatabaseSQL3.schema.createTable("chat", table=>{
-  table.increment("id");
-  table.string("user",30);
-  table.string("timestamp",20);
-  table.string("message",200);
+  table.increments("id");
+  table.string("email",30);
+  table.string("fecha",20);
+  table.string("mensaje",200);
+
 });
+
+
+
 console.log("Tabla Creada de chat");
 }
 
@@ -116,9 +121,11 @@ async save(mensaje){
    
       const fechaActual = moment().format('DD/MM/YYYY HH:mm:ss');
       mensaje.fecha = fechaActual;
-      await   this.databaseMariaDB(this.NombreTabla).insert(mensaje);
+      console.log(mensaje);
+      await   this.DatabaseSQL3(this.NombreTabla).insert(mensaje);
  
-     
+ 
+      
 
   } catch (error) {
       return "el mensaje no se puede grabar"
@@ -128,10 +135,12 @@ async save(mensaje){
 
 async getAll(){
 try {
-  const resultado = await fs.promises.readFile(this.NombreArchivo,"utf-8");
+  
+  const resultado = await this.DatabaseSQL3.from(this.NombreTabla).select("*");
+
 if (resultado.length > 0){
-  const mensaJson = JSON.parse(resultado);
-  return mensaJson;    
+ // const mensaJson = JSON.parse(resultado);
+  return resultado;    
 
 } else{
   console.log("no hay mensajes");
@@ -139,7 +148,7 @@ if (resultado.length > 0){
 }   
  
 } catch (error) {
-  const archivoNuevo=  await fs.promises.writeFile(this.NombreArchivo,"");  
+ console.log(error)
   return ""
 }
 
@@ -152,11 +161,10 @@ if (resultado.length > 0){
 const producto = new Productos("productos",options.mariaDB);
 
 //const listaMensajes = new Mensajes("Mensajes.txt");
-const listaMensajes = new Mensajes("chat",options.sqlite3);
+const listaMensajes = new Mensajes("chat",options.sqlite);
 
 listaMensajes.crearTabla();
 
-const database = knex(options);
 
 
 
